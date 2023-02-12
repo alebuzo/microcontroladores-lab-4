@@ -11,14 +11,14 @@ Luego de esto es necesario correr la línea
 
 En caso de realizar cambios o mejoras a la solución implementada en el archivo **lab4.c**, se deben correr las siguientes 3 líneas en la terminal:
 
-1 - make
+1 - **make**
 
-2 - arm-none-eabi-objcopy -O binary lab4.elf  lab4.bin
+2 - **arm-none-eabi-objcopy -O binary lab4.elf  lab4.bin**
 
-3 - st-flash --reset write lab4.bin 0x8000000
+3 - **st-flash --reset write lab4.bin 0x8000000**
 
 
 
 Para el script de python, es necesario correr el script en la terminal como:
 
-python script.py o python3 script.py
+**python script.py** o **python3 script.py**
