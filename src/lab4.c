@@ -246,9 +246,14 @@ int print_decimal(int num)
 	return len; /* number of characters printed */
 }
 
+
+// SE TOMO COMO REFERENCIA EL EJEMPLO CONTENIDO EN 
+//libopencm3-examples/examples/stm32/f4/stm32f429i-discovery/adc-dac-printf/adc-dac-printf.c
+
 static void adc_setup(void)
 {
-	gpio_mode_setup(GPIOA, GPIO_MODE_ANALOG, GPIO_PUPD_NONE, GPIO1);
+	//SE DECLARA EL PUERTO PA3 DONDE SE TOMA LA LECTURA DE LA BATERIA 
+	gpio_mode_setup(GPIOA, GPIO_MODE_ANALOG, GPIO_PUPD_NONE, GPIO3);
 	adc_power_off(ADC1);
 	adc_disable_scan_mode(ADC1);
 	adc_set_sample_time_on_all_channels(ADC1, ADC_SMPR_SMP_3CYC);
@@ -293,6 +298,8 @@ int main(void)
 	gfx_init(lcd_draw_pixel, 240, 320);
 
 	while (1) {
+	
+		
 		// SE AGREGA FORMATO A LA INFORMACION QUE VA A SER DESPLEGADA Y ENVIADA
 		sprintf(print_x, "%s", "X:");
 		sprintf(data, "%d", lectura.x);
@@ -304,7 +311,7 @@ int main(void)
 		sprintf(data, "%d", lectura.z);
 		strcat(print_z, data);
 		sprintf(print_bat, "%s", "");
-		sprintf(data, "%2f", bateria_lvl);
+		sprintf(data, "%f", bateria_lvl);
 		strcat(print_bat, data);
 		
 		// SE MUESTRA LA INFORMACION EN LA PANTALLA
@@ -333,12 +340,13 @@ int main(void)
 		gfx_puts("Bateria: ");
 		gfx_setCursor(5, 270);
 		gfx_puts(print_bat);
-		gfx_puts(" %");
+		gfx_puts(" V");
 
 		// SE IMPRIME UNA LINEA PARA INDICAR SI SE ESTA TRANSMITIENDO O NO
 		gfx_setCursor(3, 200);
 		gfx_puts("Trasmitiendo: ");
 
+		// SE INDICA EN PANTALLA SI LA TRANSMISION ESTA HABILITADA O NO
 		if (enviar){
 			gfx_setCursor(205, 200);
 			gfx_puts("Si");
@@ -352,10 +360,12 @@ int main(void)
 		
 		//Enviar datos
 		lectura = read_xyz();
-		gpio_set(GPIOC, GPIO1); 
-		input_adc0 = read_adc_naiive(1);
-		//bateria_lvl = (input_adc0*5)/4095;
-		bateria_lvl = (input_adc0*8.64)/62;
+		gpio_set(GPIOC, GPIO1);
+		// SE LEE EL PUERTO PA3 
+		input_adc0 = read_adc_naiive(3);
+		
+		// sE CALCULA EL NIVEL DE LA BATERIA
+		bateria_lvl = (input_adc0*9)/4095;
 		
 		// SI LA TRANSMISION ESTA HABILITADA SE ENVIA LA INFORMACION
 		if (enviar)
@@ -368,26 +378,25 @@ int main(void)
 			console_puts("\t");
 			print_decimal(bateria_lvl); 
 			console_puts("\n");
-			gpio_toggle(GPIOG, GPIO13);
+			gpio_toggle(GPIOG, GPIO13); //SE HACE BLINKING EN EL LED DE LA TRANSMISION
 		}
-
 		else{
-			gpio_clear(GPIOG, GPIO13);
+			gpio_clear(GPIOG, GPIO13); //SE APAGA EL LED DE LA TRANSMISION
 		}
 
 		// SE INCLUYO EL LED PARA INDICAR EL NIVEL DE LA BATERIA, SI 
 		// ESTE ES MAYOR A 7V se apaga, caso contrario hace blinking
 		if (bateria_lvl<7)
 		{
-			gpio_toggle(GPIOG, GPIO14);
+			gpio_toggle(GPIOG, GPIO14); // SE HACE BLINKING EN EL LED DE LA BATERIA
 		}
 
-		else gpio_clear(GPIOG, GPIO14);
+		else gpio_clear(GPIOG, GPIO14); //  LED DE LA BATERIA APAGADO
 		
 		if (gpio_get(GPIOA, GPIO0)) {
 			if (enviar) {
 				enviar = false;
-				gpio_clear(GPIOG, GPIO13);
+				gpio_clear(GPIOG, GPIO13); //SE APAGA EL LED DE LA TRANSMISION
 				}
 			else enviar = true;
 		}
